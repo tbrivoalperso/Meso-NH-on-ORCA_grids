@@ -1,0 +1,332 @@
+#!/bin/bash
+#SBATCH --job-name=C1_mnh_nemo
+#SBATCH --time=22:12:00
+#SBATCH --partition=normal64  # queue
+#SBATCH --nodes=19             # nbre noeuds
+#SBATCH --ntasks=752          # nbre proc
+##SBATCH --ntasks-per-node=40
+#SBATCH --output=job.out%j
+#SBATCH --exclusive
+
+#
+
+
+ulimit -s unlimited
+ulimit -c 0
+
+
+module unload intel; module load intel/16.1.150
+module unload intelmpi;module  load intelmpi/5.1.2.150
+module unload netcdf; module load netcdf/netcdf-4.3_intel16_intelmpi
+#module unload netcdf; module load netcdf/4.4.0
+
+# THINGS TO MODIFY WITH A SED
+
+NBPROC_NEMO=192 # Number of procs NEMO
+NDATEDEB=20170101  # Date of the very first beginning of the run
+NDATESTART=20170101 # Date of the start of the run
+NUM_SEG=1
+NUM_SEG_tot=4
+RUNDIR=/scratch/work/brivoalt/RUN_CPL_RUN_CPL_SWXS_2SST_GOOD_20170101 # Run directory
+RUNDIR_BEF=/scratch/work/brivoalt/RUN_CPL_RUN_CPL_SWXS_2SST_GOOD_20161226 # Run directory of the previous time section
+NPREP=1 #Number of prep real file to use in MNH namelist
+PGD=PGD_IBI12_2D_SW_XS.nc4
+MNH_IDIR=/scratch/work/brivoalt/INPUTS_MNH_NC/
+PREP_PREFIX=PREP_SX_SH # prefix of prep file eg : for PREP_IBI12_PSY4_20170101.00.nc4, write PREP_IBI12_PSY4
+SEGLEN=6 # segment length (days)
+SST_IFILE_DIR=/scratch/work/brivoalt/FORCINGS/SST/FINISHED_7d_SWXS
+SST_PREFIX=GLORYS2V4_1dAV # For GLORYS2V4_1dAV_20161231.nc4 write GLORYS2V4_1dAV
+LST_NEMO_TS=1152
+CEXP=CPL00
+NLAST_OFILE_MNH=25 # Number of the last output file from MesoNH, 2digits
+SCRIPTDIR=/home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/LAUNCH_RUNS_CUR_LONG_PREPS_SWXS_msk
+
+#----------------------------------------------------
+# PATHS
+#----------------------------------------------------
+# Modules
+. /home/ext/mr/smer/brivoalt/SAVE/CPL/MNH-V5-3-1/conf/profile_mesonh-LXifortI4-MNH-V5-3-1-OASISAUTO-MPIINTEL-O3 
+
+# Models
+
+MNHDIR=/home/ext/mr/smer/brivoalt/SAVE/CPL/MNH-V5-3-1/src/dir_obj-LXifortI4-MNH-V5-3-1-OASISAUTO_2SST-MPIINTEL-O3/MASTER/
+XIOS_DIR=/home/ext/mr/smer/brivoalt/SRC/xios-2.0_r1108RBB
+NEMO_DIR=/home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/BLD/bin/
+XIOS_INC=${XIOS_DIR}/inc
+XIOS_LIB=${XIOS_DIR}/lib
+XIOS_BIN=${XIOS_DIR}/bin
+#----------------------------------------------------
+# STATIC INPUT PATHS
+#----------------------------------------------------
+# NEMO
+STATIC=/scratch/work/brivoalt/INPUTS_ocean/staticinput/ocean/
+HOTRESTART=/scratch/work/brivoalt/FORCING_NEATL12/RESTART/
+OBCDTA=/scratch/work/brivoalt/FORCING_NEATL12/OBCDTA_3.6/
+RUNOFF=/scratch/work/brivoalt/FORCING_NEATL12/RUNOFF_3.6/
+ATMOS=/scratch/work/brivoalt/FORCING_NEATL12/ATMOS_3.6/
+
+#----------------------------------------------------
+# REFERENCE_NAMELISTS
+#----------------------------------------------------
+NAM_MNH_REF=/home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_MNH/EXSEG1_2SST_SWXS.nam.model
+NAM_NEMO_REF=/home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_NEMO/namelist_cfg_cur_long.model
+NAM_OASIS_REF=/home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_OASIS/namcouple_2SST_SWXS.model
+
+mkdir $RUNDIR
+cd $RUNDIR
+
+#----------------------------------------------------
+# STATIC INPUT NEMO
+#----------------------------------------------------
+#~~~~~~ namelist ref
+ln -sf /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/SHARED/namelist_ref .
+ln -s ${STATIC}/bathy_meter_IBI12_REA.nc bathy_meter.nc
+ln -s ${STATIC}/coordinates_IBI12.nc coordinates.nc
+ln -s ${STATIC}/kpar_IBI12_REA.nc kpar.nc
+ln -s ${STATIC}/position.moor_NEATL36_MyO_v2 position.moor
+ln -s ${STATIC}/tide_elev_IBI12_REA_NEMO3.6.nc tide_dta_grid_T.nc
+ln -s ${STATIC}/tide_ubar_IBI12_REA_NEMO3.6.nc tide_dta_grid_U.nc
+ln -s ${STATIC}/tide_vbar_IBI12_REA_NEMO3.6.nc tide_dta_grid_V.nc
+ln -s ${STATIC}/section_ijglobal.diadct_IBI12_REA section_ijglobal.diadct
+ln -s ${STATIC}/shlat2d_IBI12_REA.nc shlat2d.nc
+ln -s ${STATIC}/coordinates.bdy.nc .
+ln -s ${STATIC}/runoff_2D_sans_bdy.nc .
+ln -s ${STATIC}/new_tmx_forcing_fields_drwn2.nc .
+ln -s ${STATIC}/weights_bilinear_tmx.nc .
+#~~~~~~ FORCINGS
+ln -s ${OBCDTA}/bdy_forcing .
+ln -s ${RUNOFF}/rnf_forcing .
+ln -s ${ATMOS}/ecmwf_forcing .
+
+#----------------------------------------------------
+# STATIC INPUT XIOS
+#----------------------------------------------------
+
+unlink iodef.xml
+ln -sf /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_NEMO/iodef.xml .
+unlink file_def.xml
+ln -sf /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_NEMO/file_def.xml .
+unlink field_def.xml
+unlink domain_def.xml
+ln -sf /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_NEMO/field_def.xml .
+ln -sf /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_NEMO/domain_def.xml .
+
+#----------------------------------------------------
+# STATIC INPUT OASIS
+#----------------------------------------------------
+cp /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_OASIS/rmp_ssea_to_ocnt_DISTWGT_SWXS_msk.nc .
+cp /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_OASIS/rmp_ocnt_to_ssea_DISTWGT_SWXS_msk.nc .
+
+# -------------------------------------------------------
+#  Lien vers les executables
+# -------------------------------------------------------
+
+#~~~~~~ NEMO
+unlink nemo.exe
+ln -sf ${NEMO_DIR}/nemo.exe nemo.exe
+
+#~~~~~~ XIOS
+unlink xios_server.exe
+ln -sf ${XIOS_DIR}/bin/xios_server.exe .
+
+#~~~~~~ MESONH
+ln -fs ${MNHDIR}/MESONH .
+
+
+# -------------------------------------------------------
+#  Copy Namelists
+# -------------------------------------------------------
+cp $NAM_MNH_REF EXSEG1.nam
+cp $NAM_NEMO_REF namelist_cfg
+cp $NAM_OASIS_REF namcouple
+
+# -------------------------------------------------------
+# PART THAT CHANGE AT EVERY RUNS
+# -------------------------------------------------------
+echo ${NDATEDEB} ${NDATESTART}
+
+#~~~~~~ INIT
+if [ "${NDATEDEB}" == "${NDATESTART}" ]
+then
+echo "FIRST RUN"
+
+ln -s ${HOTRESTART}/restart_${NDATEDEB}_gridU.nc restart_gridU.nc
+ln -s ${HOTRESTART}/restart_${NDATEDEB}_gridV.nc restart_gridV.nc
+ln -s ${HOTRESTART}/restart_${NDATEDEB}_gridT.nc restart_gridT.nc
+ln -s ${HOTRESTART}/weights_bilinear_restart.nc weights_bilinear_restart.nc
+ln -s ${HOTRESTART}/weights_bilinear_restart.nc weights_bilinear_restart_2D.nc
+cp /home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/INPUT_OASIS/rst* .
+else
+   echo "THIS IS A RESTART , PLEASE MAKE SURE IT IS !!"
+   jproc=1
+
+   while [ $jproc -le ${NBPROC_NEMO} ] ; do
+      let jprocm1=$jproc-1
+      jprocm1=$(printf "%04d" $jprocm1)
+      echo $jprocm1
+      nomrst=restart_${jprocm1}.nc
+      ln -s ${RUNDIR_BEF}/RST/*_restart_${jprocm1}.nc ${nomrst}
+      let jproc=$jproc+1
+   done
+      cp ${RUNDIR_BEF}/rst* .
+fi
+
+#~~~~~~ Modify MesoNH namelist and link files for MesoNH
+PREVIOUSSEG=$(($NUM_SEG - 1))
+SEG_NAME=$(printf "%05d" $NUM_SEG)
+
+PREVIOUSSEG=$(printf "%05d" $PREVIOUSSEG)
+echo "PREVIOUS SEG" $PREVIOUSSEG "NEXT" $SEG_NAME
+
+sed -i -e "s%PGDFILE1%${PGD%.nc4}%g" EXSEG1.nam
+
+sed -i -e "s%SEG_NAME%${SEG_NAME}%g" EXSEG1.nam
+
+sed -i -e "s%EXPNAME%${CEXP}%g" EXSEG1.nam
+
+DATE_BEF=$(date +%Y%m%d -d "$NDATESTART - $SEGLEN day")
+
+
+NLAST_OFILE_MNH=$(printf "%03d" $NLAST_OFILE_MNH)
+
+PREP1=${PREP_PREFIX}_${NDATESTART}.00
+if [ "${NDATEDEB}" == "${NDATESTART}" ]
+then
+    sed -i -e "s%ISRST%START%g" EXSEG1.nam
+    ln -fs ${MNH_IDIR}/${PREP1}.nc4 .
+    ln -fs ${MNH_IDIR}/${PREP1}.des . 
+else
+    sed -i -e "s%ISRST%RESTA%g" EXSEG1.nam
+    ln -fs ${RUNDIR_BEF}/${CEXP}.1.${PREVIOUSSEG}.${NLAST_OFILE_MNH}.nc4 ${PREP1}.nc4
+    ln -fs ${RUNDIR_BEF}/${CEXP}.1.${PREVIOUSSEG}.${NLAST_OFILE_MNH}.des ${PREP1}.des
+
+fi
+
+sed -i -e "s%PREP1%${PREP1}%g" EXSEG1.nam
+
+# REPLACE NUMBER OF COUPLING FILES FOR MNH
+END_DATE=$(date +%Y%m%d -d "$NDATESTART + $(($SEGLEN - 1)) day")
+cnt=0
+nday=0
+echo "$END_DATE"
+YYYYMMDD=$NDATESTART
+while [ $((cnt)) -le 24 ]
+do  
+    for tt in 00 06 12 18
+    do
+       echo $cnt
+       if [ $((cnt)) -eq 0 ]
+       then
+           cnt=$(($cnt + 1)) 
+           #echo "First Ts"
+       else
+           cnt_tmp=$(printf "%02d" $cnt)
+           echo "CPLF_IBI_SWXS_${YYYYMMDD}.${tt}"
+           sed -i -e "s%PRECPL_${cnt_tmp}%CPLF_IBI_SWXS_${YYYYMMDD}.${tt}%g" EXSEG1.nam
+           echo "-i -e s%PRECPL_${cnt_tmp}%CPLF_IBI_SWXS_${YYYYMMDD}.${tt}%g EXSEG1.nam"
+           ln -fs /scratch/work/brivoalt/PREP_REALS/ALLYEAR/CPLF_IBI_SWXS_${YYYYMMDD}.${tt}.* .
+           cnt=$(($cnt + 1))
+       fi
+    done
+    nday=$(($nday +1))
+    YYYYMMDD=$(date +%Y%m%d -d "$NDATESTART + $nday day")
+    echo $YYYYMMDD
+done
+
+
+
+ln -fs ${MNH_IDIR}/${PGD} .
+ln -fs ${MNH_IDIR}/${PGD%.nc4}.des .
+
+
+#~~~~~~ ADD missing variables in PREP
+
+ncks -O -v XHAT2D ${PGD} XHAT2D_IBI12.nc
+ncks -O -v YHAT2D ${PGD} YHAT2D_IBI12.nc
+ncks -O -v latu ${PGD} latu.nc
+ncks -O -v latv ${PGD} latv.nc
+ncks -O -v latt ${PGD} latt.nc
+ncks -O -v lonu ${PGD} lonu.nc
+ncks -O -v lonv ${PGD} lonv.nc
+ncks -O -v lont ${PGD} lont.nc
+
+ncks  -A XHAT2D_IBI12.nc ${PREP1}.nc4
+ncks  -A YHAT2D_IBI12.nc ${PREP1}.nc4
+ncks  -A latu.nc ${PREP1}.nc4
+ncks  -A latv.nc ${PREP1}.nc4
+ncks  -A latt.nc ${PREP1}.nc4
+ncks  -A lonu.nc ${PREP1}.nc4
+ncks  -A lonv.nc ${PREP1}.nc4
+ncks  -A lont.nc ${PREP1}.nc4
+
+
+END_DATE=$(date +%Y%m%d -d "$NDATESTART + $(($SEGLEN - 1)) day")
+ln -fs ${SST_IFILE_DIR}/${SST_PREFIX}_${NDATESTART}.nc4  SST_FRC.nc
+ln -fs ${SST_IFILE_DIR}_CURU/${SST_PREFIX}_${NDATESTART}_CURU.nc4 UCU_FRC.nc
+ln -fs ${SST_IFILE_DIR}_CURV/${SST_PREFIX}_${NDATESTART}_CURV.nc4 UCV_FRC.nc
+
+
+#~~~~~~ Modify NEMO namelist
+
+
+sed -i -e "s%LAST_TIME_STEP%${LST_NEMO_TS}%g" namelist_cfg
+sed -i -e "s%STARTDATE%${NDATESTART}%g" namelist_cfg
+sed -i -e "s%RSTDIR%${RUNDIR}/RST/%g" namelist_cfg
+mkdir ${RUNDIR}/RST/
+
+if [ "${NDATEDEB}" == "${NDATESTART}" ]
+then
+
+sed -i -e "s%HRST%TRUE%g" namelist_cfg
+else
+sed -i -e "s%HRST%FALSE%g" namelist_cfg
+
+fi
+
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#--
+echo "LAUNCH RUN"
+
+time mpirun -np 96 ./nemo.exe : -np 640 ./MESONH : -np 16 ./xios_server.exe  
+
+cp ${SCRIPTDIR}/get_LSfrc_ABL.sh.model get_LSfrc_ABL.sh
+sed -i -e "s%DIRRUN%${RUNDIR}%g" get_LSfrc_ABL.sh
+sed -i -e "s%STARTDATE%${NDATESTART}%g" get_LSfrc_ABL.sh
+#sbatch get_LSfrc_ABL.sh
+
+
+
+echo "NUM_SEG = ${NUM_SEG}"
+if [ -f ${CEXP}.1.${SEG_NAME}.${NLAST_OFILE_MNH}.nc4 ];
+then
+  echo "${CEXP}.1.${SEG_NAME}.${NLAST_OFILE_MNH}.nc4 exists, RUN OK, checkin if this was the last segment "
+  if [ $((NUM_SEG)) -le $((NUM_SEG_tot)) ]
+  then
+      echo "No, The run will restart"
+      #NUM_SEG=+1
+      NUM_SEG=$(($NUM_SEG + 1))
+
+      echo $NUM_SEG
+      NEXT_DATE=$(date +%Y%m%d -d "$NDATESTART + $(($SEGLEN)) day")
+      cp ${SCRIPTDIR}/LAUNCH_FIRST_RUN.sh.model LAUNCH_NEXT_RUN.sh.${NEXT_DATE}
+      sed -i -e "s%DAYSTART%${NEXT_DATE}%g" LAUNCH_NEXT_RUN.sh.${NEXT_DATE}
+      sed -i -e "s%NUMSEG%${NUM_SEG}%g" LAUNCH_NEXT_RUN.sh.${NEXT_DATE}
+      sed -i -e "s%LAUNCHDIR%${SCRIPTDIR}%g" LAUNCH_NEXT_RUN.sh.${NEXT_DATE}
+ 
+      ./LAUNCH_NEXT_RUN.sh.${NEXT_DATE}
+
+  else
+      echo "Yes , The run is finished"
+  fi
+
+else
+
+  echo "Oh Nooooo ! There were a problem with the run :'( "
+  echo "${CEXP}.1.${SEG_NAME}.${NLAST_OFILE_MNH}.nc4 file is missing !!! "
+fi
+
+
+
+

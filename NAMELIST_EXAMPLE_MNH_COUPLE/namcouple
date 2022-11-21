@@ -1,0 +1,139 @@
+# This is a typical input file for OASIS3-MCT.
+# Keywords used in previous versions of OASIS3 
+# but now obsolete are marked "Not used"
+# Don't hesitate to ask precisions or make suggestions (oasishelp@cerfacs.fr). 
+#
+# Any line beginning with # is ignored. Blank lines are not allowed.
+#
+#########################################################################
+ $NFIELDS
+# The number of fields described in the second part of the namcouple.
+#
+            11
+ $END
+#########################################################################
+ $NBMODEL
+# The number of models in this experiment + their names (6 characters)
+#
+   2  mesonh  oceanx
+ $END
+###########################################################################
+ $RUNTIME
+# The total simulated time for this run in seconds
+#
+ 518400 
+ $END
+###########################################################################
+ $NLOGPRT
+# Amount of information written to OASIS3-MCT log files (see User Guide)
+# Premier nombre: quantite d'information pour debugger
+# Second nombre: statistics des processeurs
+  30 3
+ $END
+############################################
+ $STRINGS
+#---------------------------------
+# Surf/Atm -> Ocean
+#---------------------------------
+#~~~~~~~~~~~
+# Field 1 :
+#~~~~~~~~~~~
+MNH_TAUX O_OTaux1 1 10800 2 rstrt_SAVE_MNH_SWXS.nc EXPOUT
+360 640 367 634 ssea ocnt  LAG=+60
+R 0 R 0
+MAPPING BLASNEW
+rmp_ssea_to_ocnt_DISTWGT_SWXS_msk.nc
+-1.0 0
+#
+#~~~~~~~~~~~
+# Field 2 :
+#~~~~~~~~~~~
+MNH_TAUY O_OTauy1 1 10800 2 rstrt_SAVE_MNH_SWXS.nc EXPOUT
+360 640 367 634 ssea ocnt  LAG=+60
+R 0 R 0
+MAPPING BLASNEW
+rmp_ssea_to_ocnt_DISTWGT_SWXS_msk.nc
+-1.0 0
+#
+#~~~~~~~~~~~
+# Field 3 :
+#~~~~~~~~~~~
+MNH_HEAT O_QnsOce 1 10800 1 rstrt_SAVE_MNH_SWXS.nc EXPOUT
+360 640 367 634 ssea ocnt  LAG=+60
+R 0 R 0
+MAPPING
+rmp_ssea_to_ocnt_DISTWGT_SWXS_msk.nc
+#
+#~~~~~~~~~~~
+# Field 4 :
+#~~~~~~~~~~~
+MNH_SNET O_QsrOce 1 10800 1 rstrt_SAVE_MNH_SWXS.nc EXPOUT
+360 640 367 634 ssea ocnt  LAG=+60
+R 0 R 0
+MAPPING
+rmp_ssea_to_ocnt_DISTWGT_SWXS_msk.nc
+#
+#~~~~~~~~~~~
+# Field 5 :
+#~~~~~~~~~~~
+MNH_EVPR OOEvaMPr 1 10800 1 rstrt_SAVE_MNH_SWXS.nc EXPOUT
+360 640 367 634 ssea ocnt  LAG=+60
+R 0 R 0
+MAPPING
+rmp_ssea_to_ocnt_DISTWGT_SWXS_msk.nc
+#--------------------------------
+# Ocean ->Surf/Atm 
+#--------------------------------
+#~~~~~~~~~~~
+# Field 6 :
+#~~~~~~~~~~~
+O_SSTSST MNH__SST 1 10800 1 rstrt_NEMO_SAVE.nc EXPOUT
+367 634 360 640 ocnt ssea LAG=+450
+R 0 R 0
+MAPPING
+rmp_ocnt_to_ssea_DISTWGT_SWXS_msk.nc
+##~~~~~~~~~~~
+## Field 7 :
+##~~~~~~~~~~~
+O_OCurx1 MNH__UCU 1 10800 1 rstrt_NEMO_SAVE.nc EXPOUT
+367 634 360 640 ocnt ssea LAG=+450
+R 0 R 0
+MAPPING
+rmp_ocnt_to_ssea_DISTWGT_SWXS_msk.nc
+#~~~~~~~~~~~
+# Field 8 :
+#~~~~~~~~~~~
+O_OCury1 MNH__UCV 1 10800 1 rstrt_NEMO_SAVE.nc EXPOUT
+367 634 360 640 ocnt ssea LAG=+450
+R 0 R 0
+MAPPING
+rmp_ocnt_to_ssea_DISTWGT_SWXS_msk.nc
+#
+#--------------------------------
+# GLORYS ->Surf/Atm
+#--------------------------------
+##~~~~~~~~~~~
+## Field 9 :
+##~~~~~~~~~~~
+
+MNH_SST2 MNH_SST2 1 10800 1 SST_FRC.nc INPUT
+############################################
+
+
+##~~~~~~~~~~~
+## Field 10 :
+##~~~~~~~~~~~
+
+MNH_UCU2 MNH_UCU2 1 10800 1 UCU_FRC.nc INPUT
+############################################
+
+##~~~~~~~~~~~
+## Field 11 :
+##~~~~~~~~~~~
+
+MNH_UCV2 MNH_UCV2 1 10800 1 UCV_FRC.nc INPUT
+###########################################
+#
+ 
+ $END
+############################################

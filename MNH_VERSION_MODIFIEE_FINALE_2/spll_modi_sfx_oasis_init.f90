@@ -1,0 +1,11 @@
+!depfile:sfx_oasis_init.D
+!auto_modi:sfx_oasis_init.D
+MODULE MODI_SFX_OASIS_INIT
+INTERFACE
+SUBROUTINE SFX_OASIS_INIT(HNAMELIST,KLOCAL_COMM,HINIT)
+CHARACTER(LEN=28), INTENT(IN )           :: HNAMELIST
+INTEGER,           INTENT(OUT)           :: KLOCAL_COMM ! value of local communicator
+CHARACTER(LEN=3),  INTENT(IN ), OPTIONAL :: HINIT       ! choice of fields to initialize
+END SUBROUTINE SFX_OASIS_INIT
+END INTERFACE
+END MODULE MODI_SFX_OASIS_INIT

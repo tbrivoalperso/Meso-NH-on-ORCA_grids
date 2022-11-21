@@ -1,0 +1,207 @@
+&NAM_CONFIO LCDF4=.TRUE.,
+            LLFIOUT=.FALSE.,
+            LLFIREAD=.FALSE. /
+&NAM_CONFZ        MPI_BUFFER_SIZE=1000 /
+&NAM_CONFn        LUSERV = T, LUSERC = T, LUSERR = T,
+                  LUSERS = T, LUSERI = T, LUSERG = T, LUSERH= F 
+                  LUSECI = T, NSV_USER = 0 /
+&NAM_CONF  CCONF = "START", LFLAT = .FALSE., CEQNSYS = "DUR",
+            NMODEL = 1, NVERB = 10, CEXP = "CPL00", CSEG = "00001" ,
+            CSPLIT="BSPLITTING" 
+            ! JPHEXT=1
+            /
+
+
+
+&NAM_DYNn         XTSTEP = 60., 
+                  CPRESOPT = "ZRESI",
+                  NITR = 10,
+                  LITRADJ = T,
+                  LHORELAX_UVWTH = F, 
+                  LHORELAX_RV    = F,
+                  LHORELAX_RC    = F,
+                  LHORELAX_RR    = F,
+                  LHORELAX_RI    = F,
+                  LHORELAX_RS    = F,
+                  LHORELAX_RG    = F, 
+                  LHORELAX_RH    = F,
+                  LHORELAX_TKE   = F,
+                  LHORELAX_SV    = F,
+                  LVE_RELAX      = T,
+                  NRIMX = 4, NRIMY = 4,
+                  XRIMKMAX = 0.000277,
+                  XT4DIFU  = 1800.0,
+                  XT4DIFTH = 1800.0,
+                  XT4DIFSV = 1800.0 / 
+
+&NAM_ADVn         CUVW_ADV_SCHEME = 'WENO_K',
+                  CMET_ADV_SCHEME = 'PPM_01',
+                  CSV_ADV_SCHEME  = 'PPM_01',
+                  NWENO_ORDER=3,
+                  LCFL_WRIT=F,
+                  CTEMP_SCHEME='RK53' /
+
+
+
+&NAM_PARAMn       CTURB  = "TKEL",
+                  CRAD   = "ECMW",
+                  CDCONV = "KAFR",
+                  CSCONV = "EDKF"
+                  CCLOUD = "ICE3" /
+
+&NAM_PARAM_RADn  XDTRAD = 3600., XDTRAD_CLONLY = 3600., LCLEAR_SKY = F,
+                   NRAD_COLNBR = 400, CLW = "RRTM", CAER = "TANR" /
+
+
+
+&NAM_PARAM_KAFRn    XDTCONV=480.0,
+                    NICE=1,
+                    LREFRESH_ALL=T,
+                    LDOWN=T,
+                    LSETTADJ=T,
+                    XTADJD=3600.,
+                    XTADJS=3600.,
+                    LDIAGCONV=F/
+&NAM_PARAM_MFSHALLn XIMPL_MF=1,
+                    CMF_UPDRAFT='EDKF',
+                    CMF_CLOUD='DIRE',
+                    LMIXUV=TRUE,
+                    LMF_FLX=F /
+
+&NAM_LBCn           CLBCX(1)="OPEN", CLBCX(2)="OPEN",
+                    CLBCY(1)="OPEN", CLBCY(2)="OPEN",
+                    XCPHASE=30.0, XCARPKMAX=0.017 /
+&NAM_TURBn          LRMC01 = T,
+                    XIMPL = 1.,
+                    CTURBLEN = "BL89",
+                    CTURBDIM = "1DIM",
+                    LTURB_DIAG = T,
+                    LTURB_FLX = T,
+                    LSUBG_COND= T,
+                    CSUBG_AUCV="CLFR",
+                    LSIGMAS= T,
+                    LSIG_CONV=T /
+&NAM_PARAM_ICE      LWARM=T,
+                    CPRISTINE_ICE="PLAT" ,
+                    /
+&NAM_CH_MNHCn  /
+&NAM_ISBAn /
+&NAM_SGH_ISBAn /
+&NAM_SEAFLUXn CSEA_FLUX='COARE3',
+              CSEA_ALB='MK10',
+              LPRECIP=.TRUE.,
+              LPWEBB=.TRUE.,
+              CINTERPOL_SST='NONE',
+              XICHCE=0.0 /
+&NAM_DIAG_SURFn N2M=2,
+                LSURF_BUDGET=.TRUE.,
+                LCOEF=.TRUE. /
+
+
+&NAM_DYN XSEGLEN = 518400.,
+         XASSELIN = 0.2,
+         LCORIO = T,
+         XALKTOP = 0.001,
+         XALZBOT = 12000.,
+         LNUMDIFU = T ,
+         LNUMDIFTH = F ,
+         LNUMDIFSV = F /
+
+
+
+
+
+&NAM_SFX_WAVE_CPL XTSTEP_CPL_WAVE = -1.0,
+                  CWAVE_U10       = '        ',
+                  CWAVE_V10       = '        ',    
+                  CWAVE_CHA       = '        ',
+                  CWAVE_UCU       = '        ',
+                  CWAVE_VCU       = '        ',
+                  CWAVE_HS        = '        ',
+                  CWAVE_TP        = '        ' /
+
+&NAM_SFX_SEA_CPL XTSTEP_CPL_SEA  =  10800.,
+                 CSEA_FWSU       = 'MNH_TAUX',
+                 CSEA_FWSV       = 'MNH_TAUY',
+                 CSEA_HEAT       = 'MNH_HEAT',
+                 CSEA_SNET       = 'MNH_SNET',
+                 CSEA_WIND       = '        ',
+                 CSEA_FWSM       = '        ',
+                 CSEA_EVAP       = '        ',
+                 CSEA_RAIN       = '        ',
+                 CSEA_SNOW       = '        ',
+                 CSEA_WATF       = 'MNH_EVPR',
+                 CSEA_PRES       = '        ',
+                 CSEA_SST2       = 'MNH_SST2',
+                 CSEA_UCU2       = 'MNH_UCU2',
+                 CSEA_VCU2       = 'MNH_UCV2',
+                 CSEA_SST        = 'MNH__SST',
+                 CSEA_UCU        = 'MNH__UCU',
+                 CSEA_VCU        = 'MNH__UCV' /
+
+&NAM_OASIS LOASIS=.TRUE.,
+           LOASIS_GRID=.TRUE.,
+           CMODEL_NAME='mesonh' /
+
+
+&NAM_FMOUT 
+XFMOUT(1,1)=0.,
+XFMOUT(1,2)=21600.,
+XFMOUT(1,3)=43200.,
+XFMOUT(1,4)=64800.,
+XFMOUT(1,5)=86400.,
+XFMOUT(1,6)=108000.,
+XFMOUT(1,7)=129600.,
+XFMOUT(1,8)=151200.,
+XFMOUT(1,9)=172800.,
+XFMOUT(1,10)=194400.,
+XFMOUT(1,11)=216000.,
+XFMOUT(1,12)=237600.,
+XFMOUT(1,13)=259200.,
+XFMOUT(1,14)=280800.,
+XFMOUT(1,15)=302400.,
+XFMOUT(1,16)=324000.,
+XFMOUT(1,17)=345600.,
+XFMOUT(1,18)=367200.,
+XFMOUT(1,19)=388800.,
+XFMOUT(1,20)=410400.,
+XFMOUT(1,21)=432000.,
+XFMOUT(1,22)=453600.,
+XFMOUT(1,23)=475200.,
+XFMOUT(1,24)=496800.,
+XFMOUT(1,25)=518400.
+
+/
+
+&NAM_LUNITn  CINIFILE = "PREP_SX_SH_20170101.00",CINIFILEPGD = "PGD_IBI12_2D_SW_XS"
+CCPLFILE(1)="CPLF_IBI_SWXS_20170101.06"
+CCPLFILE(2)="CPLF_IBI_SWXS_20170101.12"
+CCPLFILE(3)="CPLF_IBI_SWXS_20170101.18"
+CCPLFILE(4)="CPLF_IBI_SWXS_20170102.00"
+CCPLFILE(5)="CPLF_IBI_SWXS_20170102.06"
+CCPLFILE(6)="CPLF_IBI_SWXS_20170102.12"
+CCPLFILE(7)="CPLF_IBI_SWXS_20170102.18"
+CCPLFILE(8)="CPLF_IBI_SWXS_20170103.00"
+CCPLFILE(9)="CPLF_IBI_SWXS_20170103.06"
+CCPLFILE(10)="CPLF_IBI_SWXS_20170103.12"
+CCPLFILE(11)="CPLF_IBI_SWXS_20170103.18"
+CCPLFILE(12)="CPLF_IBI_SWXS_20170104.00"
+CCPLFILE(13)="CPLF_IBI_SWXS_20170104.06"
+CCPLFILE(14)="CPLF_IBI_SWXS_20170104.12"
+CCPLFILE(15)="CPLF_IBI_SWXS_20170104.18"
+CCPLFILE(16)="CPLF_IBI_SWXS_20170105.00"
+CCPLFILE(17)="CPLF_IBI_SWXS_20170105.06"
+CCPLFILE(18)="CPLF_IBI_SWXS_20170105.12"
+CCPLFILE(19)="CPLF_IBI_SWXS_20170105.18"
+CCPLFILE(20)="CPLF_IBI_SWXS_20170106.00"
+CCPLFILE(21)="CPLF_IBI_SWXS_20170106.06"
+CCPLFILE(22)="CPLF_IBI_SWXS_20170106.12"
+CCPLFILE(23)="CPLF_IBI_SWXS_20170106.18"
+CCPLFILE(24)="CPLF_IBI_SWXS_20170107.00"
+
+/
+
+
+
+
+

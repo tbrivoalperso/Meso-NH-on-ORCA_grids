@@ -1,0 +1,86 @@
+#!/bin/bash
+#SBATCH --job-name=C1_mnh_nemo
+#SBATCH --time=23:50:00
+#SBATCH --partition=normal64  # queue
+#SBATCH --nodes=26             # nbre noeuds
+#SBATCH --ntasks=1040          # nbre proc
+#SBATCH --ntasks-per-node=40
+#SBATCH --output=job.out%j
+#SBATCH --exclusive
+
+
+ulimit -s unlimited
+ulimit -c 0
+
+
+module unload intel; module load intel/16.1.150
+module unload intelmpi;module  load intelmpi/5.1.2.150
+module unload netcdf; module load netcdf/netcdf-4.3_intel16_intelmpi
+#module unload netcdf; module load netcdf/4.4.0
+
+# THINGS TO MODIFY WITH A SED
+ID_RUN=RUN_CPL_SWXS_2SST_GOOD
+
+
+NB_PROC_NEMO=192 # Number of procs NEMO
+DATE_DEB=20170101  # Date of the very first beginning of the run
+DSTART=20170107 # Date of the start of the run
+NSEG=2 #NUMBER OF SEGMENT
+NSEG_tot=4
+N_PREP=1 #Number of prep real file to use in MNH namelist
+PGDFILE_NM=PGD_IBI12_2D_SW_XS.nc4
+INPUT_MNH_DIR=/scratch/work/brivoalt/INPUTS_MNH_NC/
+PREFIX_PREP=PREP_SX_SH  # prefix of prep file eg : for PREP_IBI12_PSY4_20170101.00.nc4, write PREP_IBI12_PSY4
+SEG_LEN=6 # segment length (days)
+SSTIFILEDIR=/scratch/work/brivoalt/FORCINGS/SST/FINISHED_7d_SWXS
+PREFIX_SST=GLORYS2V4_1dAV # For GLORYS2V4_1dAV_20161231.nc4 write GLORYS2V4_1dAV
+LAST_NEMO_TS=1152
+C_EXP=CPL00
+NLAST_MNH_OFILE=25 # Number of the last output file from MesoNH, 2digits
+SCRIPTDIR=/home/ext/mr/smer/brivoalt/SAVE/CPL/NEMO_3.6/ABL/SIMBAD/NEMOGCM/CONFIG/NEATL12_CPL/EXP00/LAUNCH_RUNS_CUR_LONG_PREPS_SWXS_msk
+#----------------------------------------------------
+
+
+
+RUN_DIR=/scratch/work/brivoalt/RUN_CPL_${ID_RUN}_${DSTART} # Run directory
+
+DATE_BEF=$(date +%Y%m%d -d "$DSTART - $SEG_LEN day")
+echo $DATE_BEF
+RUN_DIR_BEF=/scratch/work/brivoalt/RUN_CPL_${ID_RUN}_${DATE_BEF} # Run directory of the previous time section
+
+
+mkdir $RUN_DIR
+
+cd $RUN_DIR
+cp ${SCRIPTDIR}/RUN_CPL_WITH_RST.sh RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+
+pwd
+# -----------------------------------------------------------------
+#MODIFY FILE TO LAUNCH RUN
+# -----------------------------------------------------------------
+echo "RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}"
+sed -i -e "s%NB_PROC_NEMO%${NB_PROC_NEMO}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+
+sed -i -e "s%DATE_DEB%${DATE_DEB}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%DSTART%${DSTART}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%N_PREP%${N_PREP}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+
+sed -i -e "s%PGDFILE_NM%${PGDFILE_NM}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%INPUT_MNH_DIR%${INPUT_MNH_DIR}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%PREFIX_PREP%${PREFIX_PREP}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+
+sed -i -e "s%SEG_LEN%${SEG_LEN}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%SSTIFILEDIR%${SSTIFILEDIR}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%PREFIX_SST%${PREFIX_SST}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%LAST_NEMO_TS%${LAST_NEMO_TS}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%C_EXP%${C_EXP}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%NLAST_MNH_OFILE%${NLAST_MNH_OFILE}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%RUN_DIR_BEF%${RUN_DIR_BEF}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%RUN_DIR%${RUN_DIR}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%NSEG_tot%${NSEG_tot}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%NSEG%${NSEG}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sed -i -e "s%SCRIPT_DIR%${SCRIPTDIR}%g" RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+
+
+#./RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
+sbatch RUN_CPL_WITH_RST.sh.${ID_RUN}.${DSTART}
